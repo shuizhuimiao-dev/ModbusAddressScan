@@ -361,3 +361,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# 编译产物（不纳入版本管理）
+*.exe
+*.pdb
+*.dll
+*.obj
+*.ilk
+*.exp
+*.lib
