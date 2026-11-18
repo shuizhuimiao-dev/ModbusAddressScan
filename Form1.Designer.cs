@@ -57,6 +57,7 @@ namespace _485扫描
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.logLabel = new System.Windows.Forms.Label();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.regInput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.timeInput)).BeginInit();
             this.tabControl.SuspendLayout();
@@ -398,6 +399,11 @@ namespace _485扫描
             this.logLabel.Size = new System.Drawing.Size(20, 19);
             this.logLabel.TabIndex = 15;
             // 
+            // timer1
+            // 
+            this.timer1.Interval = 20;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -464,6 +470,7 @@ namespace _485扫描
         private System.Windows.Forms.TextBox networkTextBox;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label logLabel;
+        private System.Windows.Forms.Timer timer1;
     }
 }
 

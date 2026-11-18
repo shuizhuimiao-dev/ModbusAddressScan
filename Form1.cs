@@ -1,11 +1,11 @@
 using System;
-using System.Text;
-using System.Windows.Forms;
 using System.IO.Ports;
-using System.Net.Sockets; // 添加命名空间
-using System.Threading;   // 如需异步可用
 using System.Net; // 需在文件顶部添加
 using System.Net.NetworkInformation;
+using System.Net.Sockets; // 添加命名空间
+using System.Text;
+using System.Threading;   // 如需异步可用
+using System.Windows.Forms;
 namespace _485扫描
 {
     public partial class Form1 : Form
@@ -51,7 +51,7 @@ namespace _485扫描
                 {
                     if (!isSerialPortOpen())
                     {
-                        if (portComboBox.SelectedIndex == -1||portComboBox.SelectedItem.ToString() == null)
+                        if (portComboBox.SelectedIndex == -1 || portComboBox.SelectedItem.ToString() == null)
                         {
                             throw new InvalidOperationException("没有找到串口！！");
                         }
@@ -69,8 +69,8 @@ namespace _485扫描
                         openButton.Text = "关闭";
                         tabControl.TabPages[1].Enabled = false;
                         portComboBox.Enabled = false;
-                        baudRateComboBox.Enabled= false;
-                        logLabel.Text= "串口已打开！";
+                        baudRateComboBox.Enabled = false;
+                        logLabel.Text = "串口已打开！";
                     }
                 }
                 catch (Exception ex)
@@ -99,21 +99,19 @@ namespace _485扫描
         }
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            int bytesToRead = serialPort.BytesToRead;
-            byte[] buffer = new byte[bytesToRead];
-            serialPort.Read(buffer, 0, bytesToRead);
             Invoke(new Action(() =>
             {
-                staetTxt.AppendText(BitConverter.ToString(buffer).Replace("-", " ")); // 显示到文本框 
-            }));
+                timer1.Stop(); // 停止定时器
+                timer1.Start(); // 启动定时器
+            })); // 使用 Invoke 方法在 UI 线程上执行
         }
 
         private void startButton_Click(object sender, EventArgs e)
         {
             if (timer2.Enabled == true) return;
-            if (isSerialPortOpen()|| isServerRunning)
+            if (isSerialPortOpen() || isServerRunning)
             {
-                if (isServerRunning&&agreementComboBox.Text == "TCP Server"&& clientsNumber==0)
+                if (isServerRunning && agreementComboBox.Text == "TCP Server" && clientsNumber == 0)
                 {
                     logLabel.Text = "当前无客户端连接！"; // 更新日志标签
                     return;
@@ -122,7 +120,7 @@ namespace _485扫描
                 timer2.Interval = (int)timeInput.Value;
                 timer2.Enabled = true;
                 label5.Text = "开始扫描";
-            } 
+            }
             else
             {
                 logLabel.Text = "请先打开串口或网络连接！"; // 更新日志标签
@@ -142,7 +140,31 @@ namespace _485扫描
         {
             staetTxt.Text = "";
         }
-
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            timer1.Stop(); // 停止计时器，避免重复触发
+            if (isSerialPortOpen() && serialPort.BytesToRead != 0)
+            {
+                int bytesToRead = serialPort.BytesToRead;
+                byte[] buffer = new byte[bytesToRead];
+                serialPort.Read(buffer, 0, bytesToRead);
+                Invoke(new Action(() =>
+                {
+                    staetTxt.AppendText(BitConverter.ToString(buffer).Replace("-", " ")); // 显示到文本框 
+                }));
+            }
+            //获取staetTxt最后一行的数据
+            if (staetTxt.Lines.Length > 0)
+            {
+                string lastLine = staetTxt.Lines[staetTxt.Lines.Length - 1];
+                if (lastLine.Length > 0)
+                {
+                    //将lastLine的第一个16进制数转换为byte
+                    byte firstByte = Convert.ToByte(lastLine.Substring(0, 2), 16);
+                    staetTxt.AppendText("\t地址：" + firstByte + Environment.NewLine); // 显示到文本框 
+                }
+            }
+        }
         private void timer2_Tick(object sender, EventArgs e)
         {
             byte[] frame = new byte[8];
@@ -174,7 +196,7 @@ namespace _485扫描
 
                 }
             }
-            else if(listenerThread!=null&&isServerRunning)
+            else if (listenerThread != null && isServerRunning)
             {
                 try
                 {
@@ -191,17 +213,7 @@ namespace _485扫描
             }
 
             label5.Text = "扫描地址：" + count;
-            //获取staetTxt最后一行的数据
-            if (staetTxt.Lines.Length > 0)
-            {
-                string lastLine = staetTxt.Lines[staetTxt.Lines.Length - 1];
-                if (lastLine.Length > 0)
-                {
-                    //将lastLine的第一个16进制数转换为byte
-                    byte firstByte = Convert.ToByte(lastLine.Substring(0, 2), 16);
-                    staetTxt.AppendText("\t地址："+ firstByte+ Environment.NewLine); // 显示到文本框 
-                }
-            }
+            timer1.Start();
             if (count >= 255)
             {
                 timer2.Enabled = false;
@@ -245,9 +257,9 @@ namespace _485扫描
             return localIP;
         }
         //判断输入ip是否是本机ip
-        public  bool IsLocalIpAddressAdvanced(string ipAddress)
+        public bool IsLocalIpAddressAdvanced(string ipAddress)
         {
-            if(ipAddress == null || ipAddress.Trim() == "")
+            if (ipAddress == null || ipAddress.Trim() == "")
             {
                 return false;
             }
@@ -292,7 +304,7 @@ namespace _485扫描
                 return false;
             }
         }
-        private void StartTcpServer(String ip,int port)
+        private void StartTcpServer(String ip, int port)
         {
             IPAddress localAddr = IPAddress.Parse(ip); // 将字符串 IP 转换为 IPAddress
             tcpListener = new TcpListener(localAddr, port); // 使用 IPAddress 对象
@@ -310,7 +322,7 @@ namespace _485扫描
             isServerRunning = false;
             tcpListener?.Stop();
             listenerThread?.Join();
-            listenerThread=null;
+            listenerThread = null;
             logLabel.Text = "TCP服务端已停止";
             clientsNumber = 0;
         }
@@ -363,7 +375,7 @@ namespace _485扫描
                 client.Close();
             }
         }
-        private void networkStartup(string serverIp,int serverPort)
+        private void networkStartup(string serverIp, int serverPort)
         {
             if (agreementComboBox.Text == "TCP Server")
             {
@@ -426,7 +438,7 @@ namespace _485扫描
 
                     tcpClient = null;
                     logLabel.Text = "TCP连接已断开！";
-                    listenerThread= null;
+                    listenerThread = null;
                 }
             }
             networkButton.Text = "连接";
@@ -442,15 +454,15 @@ namespace _485扫描
         {
             string serverIp = networkTextBox.Text; // 服务器IP，可根据需要修改
             int serverPort = (int)tcpPortNum.Value;          // 端口号，可根据需要修改
-            if (serverIp=="")
+            if (serverIp == "")
             {
                 logLabel.Text = "请输入服务器IP地址！";
                 return;
             }
-            if (networkButton.Text== "连接")
+            if (networkButton.Text == "连接")
             {
 
-                networkStartup(serverIp,serverPort);
+                networkStartup(serverIp, serverPort);
             }
             else
             {
@@ -468,10 +480,12 @@ namespace _485扫描
             {
                 //获取本机ip地址
                 networkTextBox.Text = GetLocalIPv4();
-                
+
             }
-            
-        } 
+
+        }
+
+
     }
 }
 public static class ModbusUtils
